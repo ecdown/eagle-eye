@@ -14,8 +14,10 @@ def chunks(list_of_items, number_in_group):
 def load_config_data(filename):
     config = ConfigParser.ConfigParser()
     config.readfp(open(filename))
-
-    return config 
+    configData = config.items("main")
+    configReturn = []
+    configReturn.append(dict(configData))
+    return configReturn 
 
 def get_file_list(file_location):
     filelist = sorted(glob.glob(file_location + "/*.jpg"))
@@ -33,7 +35,11 @@ def inject_pagination(max_pages,cur_page=0):
     return retval
 
 def outputPage(file_list,filename,cur_page,max_page):
-    file_handle = open(filename + str(cur_page) + ".html",'w')
+    if cur_page == 0:
+        cur_page_num = ''
+    else:
+        cur_page_num = str(cur_page)
+    file_handle = open(filename + cur_page_num + ".html",'w')
     #http://stackoverflow.com/questions/6773584/how-is-pythons-glob-glob-ordered
     file_handle.write("<html>")
     file_handle.write("<head>")
@@ -64,14 +70,16 @@ def outputPage(file_list,filename,cur_page,max_page):
 
 def main():
     parser = argparse.ArgumentParser(description='Generate Image web pages')
-    parser.add_argument('--config',dest='configfile',help="Location of the configuration file",default="eagle_eye.config")
+    parser.add_argument('--config',dest='configfile',help="Location of the configuration file",default="/home/pi/eagle_eye/eagle_eye.config")
     args = parser.parse_args()
     if os.path.exists(args.configfile):
-        config = load_config_data(args.configfile)
+        configData = load_config_data(args.configfile)
     else:
         print("Config file: %s doesn't exist" % args.configfile)
-    file_location = config.get('main','file_location')
-    pics_per_page = int(config.get('main','pic_per_page'))
+        exit()
+        
+    file_location = configData[0]['file_location']
+    pics_per_page = int(configData[0]['pic_per_page'])
      
     file_list = get_file_list(file_location)
     num_pages = len(file_list) / pics_per_page
