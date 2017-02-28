@@ -9,5 +9,6 @@ Requirements:
   Camera
   raspistill 
   python2.7
-
-
+  gdata-python-client https://github.com/google/gdata-python-clienthttps://github.com/google/gdata-python-client
+ 
+https://gist.github.com/atr000/653555

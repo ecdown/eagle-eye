@@ -5,6 +5,10 @@ import argparse
 import ConfigParser
 
 ####################################################
+# Globals 
+####################################################
+debug = False
+####################################################
 # Utility functions
 ####################################################
 def chunks(list_of_items, number_in_group):
@@ -30,7 +34,11 @@ def inject_pagination(max_pages,cur_page=0):
             active = 'class="active"'
         else:
             active = ''
-        retval  += '<li ' + active + '><a href="/index' + str(x) + '.html">' + str(x) + '</a></li>'
+        pageNumStr = str(x)
+        if (x == 0):
+            pageNumStr = ""
+        print(pageNumStr)
+        retval  += '<li ' + active + '><a href="/index' + pageNumStr + '.html">' + str(x) + '</a></li>'
     retval += "</ul>"
     return retval
 
@@ -68,10 +76,18 @@ def outputPage(file_list,filename,cur_page,max_page):
     file_handle.write("</html>")
     file_handle.close()
 
+def print_debug(in_str):
+    global debug
+    if (debug == True):
+        print(in_str)
+
 def main():
+    global debug
     parser = argparse.ArgumentParser(description='Generate Image web pages')
     parser.add_argument('--config',dest='configfile',help="Location of the configuration file",default="/home/pi/eagle_eye/eagle_eye.config")
+    parser.add_argument('-d','--debug',dest='debug',action="store_true",help="Turn on Debugging",default=False)
     args = parser.parse_args()
+    debug = args.debug
     if os.path.exists(args.configfile):
         configData = load_config_data(args.configfile)
     else:
@@ -82,10 +98,13 @@ def main():
     pics_per_page = int(configData[0]['pic_per_page'])
      
     file_list = get_file_list(file_location)
-    num_pages = len(file_list) / pics_per_page
+    total_files = len(file_list)
+    num_pages = total_files / pics_per_page
     cur_page = 0
-     
+    print_debug("Total Files: " + str(total_files)) 
+    print_debug("Num Pages: " + str(num_pages)) 
     for files  in chunks(file_list, pics_per_page):
+
         if cur_page < num_pages:
             outputPage(files,'/var/www/html/index', cur_page,num_pages)
             cur_page = cur_page + 1
